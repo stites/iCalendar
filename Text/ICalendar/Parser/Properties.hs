@@ -177,8 +177,9 @@ parseAttachment (ContentLine _ "ATTACH" o bs) = do
                                                   (toO $ filter binF o)
                   _ -> throwError $ "parseAttachment: invalid encoding: " ++
                                         show enc
-         Nothing -> do uri <- parseURI =<< asks (T.unpack . ($ bs) . dfBS2Text)
-                       return $ UriAttachment fmt uri (toO $ filter f o)
+         Nothing -> return $ BinaryAttachment Nothing "" (OtherParams S.empty)
+             -- uri <- parseURI =<< asks (T.unpack . ($ bs) . dfBS2Text)
+             -- return $ UriAttachment fmt uri (toO $ filter f o)
          _ -> throwError $ "parseAttachment: invalid value: " ++ show val
   where binF a@(x, _) = f a && x /= "VALUE" && x /= "ENCODING"
         f (x, _) = x /= "FMTTYPE"
