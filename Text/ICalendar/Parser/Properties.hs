@@ -162,27 +162,28 @@ parseAttendee x = throwError $ "parseAttendee: " ++ show x
 
 -- | Parse attachment. 3.8.1.1
 parseAttachment :: Content -> ContentParser Attachment
-parseAttachment (ContentLine _ "ATTACH" o bs) = do
-    fmt <- mapM (parseMime <=< paramOnlyOne) $ lookup "FMTTYPE" o
-    val <- mapM paramOnlyOne $ lookup "VALUE" o
-    case val of
-         Just "BINARY" -> do
-             enc <- mapM paramOnlyOne $ lookup "ENCODING" o
-             case enc of
-                  Just "BASE64" ->
-                      case B64.decode bs of
-                           Left e -> throwError $ "parseAttachment: invalid \
-                                                  \base64: " ++ e
-                           Right v -> return $ BinaryAttachment fmt v
-                                                  (toO $ filter binF o)
-                  _ -> throwError $ "parseAttachment: invalid encoding: " ++
-                                        show enc
-         Nothing -> return $ BinaryAttachment Nothing "" (OtherParams S.empty)
-             -- uri <- parseURI =<< asks (T.unpack . ($ bs) . dfBS2Text)
-             -- return $ UriAttachment fmt uri (toO $ filter f o)
-         _ -> throwError $ "parseAttachment: invalid value: " ++ show val
-  where binF a@(x, _) = f a && x /= "VALUE" && x /= "ENCODING"
-        f (x, _) = x /= "FMTTYPE"
+parseAttachment (ContentLine _ "ATTACH" o bs) = return $ BinaryAttachment Nothing "" (OtherParams S.empty)
+-- parseAttachment (ContentLine _ "ATTACH" o bs) = do
+--     fmt <- mapM (parseMime <=< paramOnlyOne) $ lookup "FMTTYPE" o
+--     val <- mapM paramOnlyOne $ lookup "VALUE" o
+--     case val of
+--          Just "BINARY" -> do
+--              enc <- mapM paramOnlyOne $ lookup "ENCODING" o
+--              case enc of
+--                   Just "BASE64" ->
+--                       case B64.decode bs of
+--                            Left e -> throwError $ "parseAttachment: invalid \
+--                                                   \base64: " ++ e
+--                            Right v -> return $ BinaryAttachment fmt v
+--                                                   (toO $ filter binF o)
+--                   _ -> throwError $ "parseAttachment: invalid encoding: " ++
+--                                         show enc
+--          Nothing -> return $ BinaryAttachment Nothing "" (OtherParams S.empty)
+--              -- uri <- parseURI =<< asks (T.unpack . ($ bs) . dfBS2Text)
+--              -- return $ UriAttachment fmt uri (toO $ filter f o)
+--          _ -> throwError $ "parseAttachment: invalid value: " ++ show val
+--   where binF a@(x, _) = f a && x /= "VALUE" && x /= "ENCODING"
+--         f (x, _) = x /= "FMTTYPE"
 parseAttachment x = throwError $ "parseAttachment: " ++ show x
 
 parseDurationProp :: Maybe DTStart -> Content -> ContentParser DurationProp
